@@ -121,14 +121,19 @@ Deployment below) — don't run `npm run cron` there.
 3. Set `CRON_SECRET` — Vercel automatically sends it as
    `Authorization: Bearer <CRON_SECRET>` on requests it makes to your cron
    routes, which `/api/cron/sweep` checks for.
-4. Deploy. `vercel.json` registers `/api/cron/sweep` to run every 5 minutes.
-   > Vercel's Hobby (free) plan may throttle cron frequency more than what's
-   > configured here. That's fine for correctness (the lazy on-read sweep
-   > covers it), but if you want the waitlist cascade to fire promptly even
-   > for unwatched events, point a free external pinger (e.g.
+4. Deploy. `vercel.json` registers `/api/cron/sweep` to run once daily
+   (`0 3 * * *`) — **Vercel's Hobby (free) plan only permits daily cron jobs**;
+   a more frequent expression is rejected at deploy time.
+   > This does not affect correctness: expired holds and waitlist offers are
+   > swept lazily on every seat-map read and hold attempt (see DESIGN.md), so
+   > any event someone is actually looking at self-cleans immediately. The
+   > cron is only a backstop for events nobody is currently viewing.
+   >
+   > If you want that backstop to fire more often than daily, either upgrade
+   > to Vercel Pro, or point a free external pinger (e.g.
    > [cron-job.org](https://cron-job.org)) at
    > `POST https://your-app.vercel.app/api/cron/sweep` with an
-   > `Authorization: Bearer <CRON_SECRET>` header every 1–5 minutes instead.
+   > `Authorization: Bearer <CRON_SECRET>` header every 1–5 minutes.
 
 MongoDB Atlas and Gmail App Passwords both need your own free accounts —
 sign-up isn't something this repo can automate for you.
