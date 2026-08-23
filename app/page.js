@@ -78,9 +78,6 @@ export default async function HomePage({ searchParams }) {
                 live the moment.
               </span>
             </h1>
-            <p className="mt-1 text-xs text-white/70 sm:text-sm">
-              Live seat maps · 10-minute holds · QR tickets by email
-            </p>
           </div>
 
           <form className="flex w-full gap-2 sm:w-auto sm:shrink-0" action="/">
