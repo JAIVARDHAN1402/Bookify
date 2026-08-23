@@ -23,6 +23,21 @@ const SWATCH_BG = {
   booked: { background: "var(--foreground)", opacity: 0.3 },
 };
 
+// Distinct hue per seat category, assigned by the category's order in the
+// event's pricing list, so an available seat's colour tells you its tier
+// without hovering. Wraps if a venue somehow defines more than six.
+const CATEGORY_COLORS = ["#7c3aed", "#0891b2", "#059669", "#db2777", "#ea580c", "#4f46e5"];
+
+function rowLetter(index) {
+  let n = index;
+  let out = "";
+  do {
+    out = String.fromCharCode(65 + (n % 26)) + out;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return out;
+}
+
 export default function SeatMap({ eventId }) {
   const router = useRouter();
   const [data, setData] = useState(null);
@@ -88,6 +103,11 @@ export default function SeatMap({ eventId }) {
   const secondsLeft = holdExpiresAt && now ? Math.max(0, Math.round((new Date(holdExpiresAt) - now) / 1000)) : 0;
   const heldExpired = holdExpiresAt && now && secondsLeft === 0;
 
+  const categoryColor = Object.fromEntries(
+    event.categoryPricing.map((cp, i) => [cp.category, CATEGORY_COLORS[i % CATEGORY_COLORS.length]])
+  );
+  const priceFor = Object.fromEntries(event.categoryPricing.map((cp) => [cp.category, cp.price]));
+
   function seatVariant(seat) {
     if (seat.status === "available" && selected.has(seat.id)) return "selected";
     if (seat.status === "held" && seat.isMine) return "mine";
@@ -100,7 +120,12 @@ export default function SeatMap({ eventId }) {
 
   function seatInlineStyle(seat) {
     const variant = seatVariant(seat);
-    if (variant === "available") return SWATCH_BG.available;
+    // Available seats are tinted with their category's colour so the tier is
+    // readable at a glance; every other state is defined by its status colour.
+    if (variant === "available") {
+      const c = categoryColor[seat.category] ?? "var(--brand)";
+      return { background: `color-mix(in srgb, ${c} 14%, var(--surface))`, borderColor: c, color: c };
+    }
     return { background: SWATCH_BG[variant]?.background };
   }
 
@@ -206,8 +231,42 @@ export default function SeatMap({ eventId }) {
         </p>
 
         <div className="card !p-4 sm:!p-6">
-          <div className="mb-6 flex flex-wrap gap-x-4 gap-y-2 text-xs">
-            <Legend variant="available" label="Available" />
+          <div className="mb-4">
+            <p className="field-label mb-2">Seat categories</p>
+            <div className="flex flex-wrap gap-2">
+              {event.categoryPricing.map((cp) => {
+                const left = seats.filter((s) => s.category === cp.category && s.status === "available").length;
+                return (
+                  <span
+                    key={cp.category}
+                    className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs"
+                    style={{
+                      borderColor: categoryColor[cp.category],
+                      background: `color-mix(in srgb, ${categoryColor[cp.category]} 10%, transparent)`,
+                    }}
+                  >
+                    <span
+                      className="inline-block h-3 w-3 rounded-[3px] border"
+                      style={{
+                        background: `color-mix(in srgb, ${categoryColor[cp.category]} 14%, var(--surface))`,
+                        borderColor: categoryColor[cp.category],
+                      }}
+                    />
+                    <span className="font-semibold" style={{ color: categoryColor[cp.category] }}>
+                      {cp.category}
+                    </span>
+                    <span className="font-semibold">${cp.price.toFixed(2)}</span>
+                    <span className="muted">· {left} left</span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <div
+            className="mb-6 flex flex-wrap gap-x-4 gap-y-2 border-t pt-4 text-xs"
+            style={{ borderColor: "var(--border)" }}
+          >
             <Legend variant="selected" label="Selected" />
             <Legend variant="mine" label="Held by you" />
             <Legend variant="held" label="Held by others" />
@@ -229,18 +288,28 @@ export default function SeatMap({ eventId }) {
             <div
               className="mx-auto grid w-fit gap-1.5 sm:gap-2"
               style={{
-                gridTemplateColumns: `repeat(${layout?.cols ?? 1}, minmax(0, 2.25rem))`,
+                gridTemplateColumns: `1.25rem repeat(${layout?.cols ?? 1}, minmax(0, 2.25rem))`,
                 gridTemplateRows: `repeat(${layout?.rows ?? 1}, 2.25rem)`,
               }}
             >
+              {Array.from({ length: layout?.rows ?? 0 }, (_, r) => (
+                <span
+                  key={`row-${r}`}
+                  style={{ gridColumn: 1, gridRow: r + 1 }}
+                  className="flex items-center justify-center font-mono text-[10px] muted"
+                >
+                  {rowLetter(r)}
+                </span>
+              ))}
+
               {seats.map((seat) => (
                 <button
                   key={seat.id}
                   type="button"
                   disabled={busy || (seat.status !== "available" && !(seat.status === "held" && seat.isMine))}
                   onClick={() => toggleSeat(seat)}
-                  title={`${seat.label} · ${seat.category} · ${seat.status}`}
-                  style={{ gridColumn: seat.col, gridRow: seat.row, ...seatInlineStyle(seat) }}
+                  title={`${seat.label} · ${seat.category} · $${priceFor[seat.category] ?? "?"} · ${seat.status}`}
+                  style={{ gridColumn: seat.col + 1, gridRow: seat.row, ...seatInlineStyle(seat) }}
                   className={`flex h-9 w-9 items-center justify-center rounded-t-lg rounded-b-md border text-[10px] font-semibold transition-all ${seatClassName(seat)}`}
                 >
                   {seat.label}
@@ -272,9 +341,43 @@ export default function SeatMap({ eventId }) {
 
         {selected.size > 0 && (
           <div className="mb-3">
-            <p className="text-sm">{selected.size} seat(s) selected</p>
-            <button disabled={busy} onClick={handleHold} className="btn-primary mt-2 w-full">
-              Hold seats
+            <ul className="mb-2 text-sm">
+              {seats
+                .filter((s) => selected.has(s.id))
+                .map((s) => (
+                  <li
+                    key={s.id}
+                    className="flex items-center justify-between border-b py-1.5 last:border-0"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      {s.label}
+                      <span
+                        className="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                        style={{
+                          background: `color-mix(in srgb, ${categoryColor[s.category]} 14%, transparent)`,
+                          color: categoryColor[s.category],
+                        }}
+                      >
+                        {s.category}
+                      </span>
+                    </span>
+                    <span className="muted">${priceFor[s.category]?.toFixed(2)}</span>
+                  </li>
+                ))}
+            </ul>
+            <p className="mb-2 flex justify-between text-sm font-semibold">
+              <span>Subtotal</span>
+              <span>
+                $
+                {seats
+                  .filter((s) => selected.has(s.id))
+                  .reduce((sum, s) => sum + (priceFor[s.category] ?? 0), 0)
+                  .toFixed(2)}
+              </span>
+            </p>
+            <button disabled={busy} onClick={handleHold} className="btn-primary w-full">
+              Hold {selected.size} seat{selected.size > 1 ? "s" : ""}
             </button>
           </div>
         )}
@@ -293,8 +396,18 @@ export default function SeatMap({ eventId }) {
             <ul className="mb-3 text-sm">
               {mySeats.map((s) => (
                 <li key={s.id} className="flex items-center justify-between border-b py-1.5 last:border-0" style={{ borderColor: "var(--border)" }}>
-                  <span>
-                    {s.label} <span className="muted">({s.category})</span>
+                  <span className="flex items-center gap-1.5">
+                    {s.label}
+                    <span
+                      className="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                      style={{
+                        background: `color-mix(in srgb, ${categoryColor[s.category]} 14%, transparent)`,
+                        color: categoryColor[s.category],
+                      }}
+                    >
+                      {s.category}
+                    </span>
+                    <span className="muted">${priceFor[s.category]?.toFixed(2)}</span>
                   </span>
                   <button disabled={busy} onClick={() => handleRelease(s.id)} className="text-xs text-red-600 hover:underline">
                     remove
