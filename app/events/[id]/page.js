@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { Event } from "@/lib/models";
 import EventPoster from "@/components/EventPoster";
+import { formatPrice } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export default async function EventDetailPage({ params }) {
                 style={{ borderColor: "var(--border)" }}
               >
                 <span className="badge">{cp.category}</span>
-                <span className="font-semibold">${cp.price.toFixed(2)}</span>
+                <span className="font-semibold">{formatPrice(cp.price)}</span>
               </li>
             ))}
           </ul>

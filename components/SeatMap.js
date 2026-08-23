@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatPrice } from "@/lib/currency";
 
 const POLL_MS = 3000;
 
@@ -255,7 +256,7 @@ export default function SeatMap({ eventId }) {
                     <span className="font-semibold" style={{ color: categoryColor[cp.category] }}>
                       {cp.category}
                     </span>
-                    <span className="font-semibold">${cp.price.toFixed(2)}</span>
+                    <span className="font-semibold">{formatPrice(cp.price)}</span>
                     <span className="muted">· {left} left</span>
                   </span>
                 );
@@ -308,7 +309,7 @@ export default function SeatMap({ eventId }) {
                   type="button"
                   disabled={busy || (seat.status !== "available" && !(seat.status === "held" && seat.isMine))}
                   onClick={() => toggleSeat(seat)}
-                  title={`${seat.label} · ${seat.category} · $${priceFor[seat.category] ?? "?"} · ${seat.status}`}
+                  title={`${seat.label} · ${seat.category} · ${formatPrice(priceFor[seat.category])} · ${seat.status}`}
                   style={{ gridColumn: seat.col + 1, gridRow: seat.row, ...seatInlineStyle(seat) }}
                   className={`flex h-9 w-9 items-center justify-center rounded-t-lg rounded-b-md border text-[10px] font-semibold transition-all ${seatClassName(seat)}`}
                 >
@@ -362,18 +363,18 @@ export default function SeatMap({ eventId }) {
                         {s.category}
                       </span>
                     </span>
-                    <span className="muted">${priceFor[s.category]?.toFixed(2)}</span>
+                    <span className="muted">{formatPrice(priceFor[s.category])}</span>
                   </li>
                 ))}
             </ul>
             <p className="mb-2 flex justify-between text-sm font-semibold">
               <span>Subtotal</span>
               <span>
-                $
-                {seats
-                  .filter((s) => selected.has(s.id))
-                  .reduce((sum, s) => sum + (priceFor[s.category] ?? 0), 0)
-                  .toFixed(2)}
+                {formatPrice(
+                  seats
+                    .filter((s) => selected.has(s.id))
+                    .reduce((sum, s) => sum + (priceFor[s.category] ?? 0), 0)
+                )}
               </span>
             </p>
             <button disabled={busy} onClick={handleHold} className="btn-primary w-full">
@@ -407,7 +408,7 @@ export default function SeatMap({ eventId }) {
                     >
                       {s.category}
                     </span>
-                    <span className="muted">${priceFor[s.category]?.toFixed(2)}</span>
+                    <span className="muted">{formatPrice(priceFor[s.category])}</span>
                   </span>
                   <button disabled={busy} onClick={() => handleRelease(s.id)} className="text-xs text-red-600 hover:underline">
                     remove
@@ -417,7 +418,7 @@ export default function SeatMap({ eventId }) {
             </ul>
             <p className="mb-3 flex justify-between text-sm font-semibold">
               <span>Total</span>
-              <span>${totalForMySeats.toFixed(2)}</span>
+              <span>{formatPrice(totalForMySeats)}</span>
             </p>
             <button disabled={busy || heldExpired} onClick={handleConfirm} className="btn-primary w-full">
               Confirm booking

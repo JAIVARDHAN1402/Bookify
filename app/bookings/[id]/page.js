@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import { Booking } from "@/lib/models";
 import { generateQrDataUrl } from "@/lib/qrcode";
 import EventPoster from "@/components/EventPoster";
+import { formatPrice } from "@/lib/currency";
 import CancelBookingButton from "@/components/CancelBookingButton";
 
 export const dynamic = "force-dynamic";
@@ -75,7 +76,7 @@ export default async function BookingDetailPage({ params }) {
             <dt className="field-label">Seats</dt>
             <dd className="font-semibold">{booking.seatIds.map((s) => s.label).join(", ")}</dd>
             <dt className="field-label">Total</dt>
-            <dd className="font-semibold">${booking.totalAmount.toFixed(2)}</dd>
+            <dd className="font-semibold">{formatPrice(booking.totalAmount)}</dd>
             <dt className="field-label">Status</dt>
             <dd className="capitalize">
               <span className={`badge ${isCancelled ? "" : "badge-accent"}`}>{booking.status}</span>

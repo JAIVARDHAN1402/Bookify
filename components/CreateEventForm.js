@@ -164,7 +164,7 @@ export default function CreateEventForm() {
 
       {selectedVenue && (
         <div className="card">
-          <p className="field-label mb-3">Pricing per category</p>
+          <p className="field-label mb-3">Pricing per category (₹)</p>
           <div className="flex flex-col gap-2.5">
             {selectedVenue.categories.map((c) => (
               <label key={c} className="flex items-center gap-3 text-sm">

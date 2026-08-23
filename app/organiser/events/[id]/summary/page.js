@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { Event, Booking } from "@/lib/models";
+import { formatPrice } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function EventSummaryPage({ params }) {
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Stat label="Bookings" value={bookings.length} />
         <Stat label="Seats sold" value={seatsSold} />
-        <Stat label="Revenue" value={`$${revenue.toFixed(2)}`} accent />
+        <Stat label="Revenue" value={formatPrice(revenue)} accent />
       </div>
 
       <div className="card mt-6">
@@ -56,7 +57,7 @@ export default async function EventSummaryPage({ params }) {
               <tr key={cat} className="border-t" style={{ borderColor: "var(--border)" }}>
                 <td className="py-2.5"><span className="badge">{cat}</span></td>
                 <td className="py-2.5">{stats.seatsSold}</td>
-                <td className="py-2.5 font-medium">${stats.revenue.toFixed(2)}</td>
+                <td className="py-2.5 font-medium">{formatPrice(stats.revenue)}</td>
               </tr>
             ))}
             {Object.keys(byCategory).length === 0 && (
