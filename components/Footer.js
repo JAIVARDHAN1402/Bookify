@@ -32,7 +32,7 @@ export default function Footer() {
 
       <div className="border-t px-4 py-4" style={{ borderColor: "var(--border)" }}>
         <p className="mx-auto max-w-6xl text-xs muted">
-          © {new Date().getFullYear()} Bookify. Built as a ticket booking system demo.
+          © {new Date().getFullYear()} Bookify. All rights reserved.
         </p>
       </div>
     </footer>

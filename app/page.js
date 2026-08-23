@@ -57,63 +57,48 @@ export default async function HomePage({ searchParams }) {
   return (
     <div className="flex flex-col gap-14">
       {/* ---------- Hero ---------- */}
-      <section className="relative -mx-4 overflow-hidden px-6 py-16 sm:mx-0 sm:rounded-3xl sm:px-12 sm:py-20">
+      <section className="relative -mx-4 overflow-hidden px-5 py-6 sm:mx-0 sm:rounded-2xl sm:px-8">
         <div
           className="absolute inset-0"
-          style={{ background: "linear-gradient(120deg, #2e1065, #5b21b6 40%, #9d174d 90%)" }}
+          style={{ background: "linear-gradient(115deg, #2e1065, #5b21b6 45%, #9d174d 100%)" }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 78% 18%, rgba(251,191,36,0.42), transparent 46%), radial-gradient(circle at 8% 88%, rgba(56,189,248,0.34), transparent 44%)",
+              "radial-gradient(circle at 82% 20%, rgba(251,191,36,0.35), transparent 50%), radial-gradient(circle at 5% 90%, rgba(56,189,248,0.28), transparent 48%)",
           }}
         />
 
-        <div className="relative">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90 ring-1 ring-inset ring-white/20 backdrop-blur-sm">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </span>
-            Now booking
-          </span>
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+              Book your seat,{" "}
+              <span className="bg-gradient-to-r from-amber-200 to-sky-200 bg-clip-text text-transparent">
+                live the moment.
+              </span>
+            </h1>
+            <p className="mt-1 text-xs text-white/70 sm:text-sm">
+              Live seat maps · 10-minute holds · QR tickets by email
+            </p>
+          </div>
 
-          <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-6xl">
-            Book your seat,
-            <br />
-            <span className="bg-gradient-to-r from-amber-200 via-white to-sky-200 bg-clip-text text-transparent">
-              live the moment.
-            </span>
-          </h1>
-
-          <p className="mt-5 max-w-lg text-sm leading-relaxed text-white/75 sm:text-base">
-            Pick your exact seat from a live map, hold it while you decide, and get a QR ticket in
-            your inbox the second you book.
-          </p>
-
-          <form className="mt-8 flex max-w-lg gap-2" action="/">
+          <form className="flex w-full gap-2 sm:w-auto sm:shrink-0" action="/">
             {type && <input type="hidden" name="type" value={type} />}
             <input
               name="q"
               defaultValue={q}
-              placeholder="Search movies, concerts…"
+              placeholder="Search events…"
               aria-label="Search events"
-              className="w-full rounded-xl border-0 bg-white/95 px-4 py-3 text-sm text-neutral-900 outline-none ring-2 ring-transparent transition placeholder:text-neutral-500 focus:ring-white/60"
+              className="w-full rounded-lg border-0 bg-white/95 px-3.5 py-2 text-sm text-neutral-900 outline-none ring-2 ring-transparent transition placeholder:text-neutral-500 focus:ring-white/60 sm:w-56"
             />
             <button
               type="submit"
-              className="shrink-0 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800"
+              className="shrink-0 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800"
             >
               Search
             </button>
           </form>
-
-          <dl className="mt-9 flex flex-wrap gap-x-10 gap-y-4">
-            <HeroStat value={events.length} label="events live" />
-            <HeroStat value="10 min" label="seat hold" />
-            <HeroStat value="Auto" label="waitlist" />
-          </dl>
         </div>
       </section>
 
@@ -289,15 +274,6 @@ export default async function HomePage({ searchParams }) {
           />
         </div>
       </section>
-    </div>
-  );
-}
-
-function HeroStat({ value, label }) {
-  return (
-    <div>
-      <dt className="text-2xl font-bold text-white">{value}</dt>
-      <dd className="text-xs uppercase tracking-wider text-white/60">{label}</dd>
     </div>
   );
 }
