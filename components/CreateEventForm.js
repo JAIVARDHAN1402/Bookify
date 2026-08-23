@@ -9,6 +9,8 @@ export default function CreateEventForm() {
   const [venueId, setVenueId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [posterUrl, setPosterUrl] = useState("");
+  const [posterOk, setPosterOk] = useState(null); // null = untested, false = failed to load
   const [type, setType] = useState("movie");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -46,11 +48,23 @@ export default function CreateEventForm() {
       if (categoryPricing.some((cp) => !cp.price || cp.price <= 0)) {
         throw new Error("Set a price greater than 0 for every category");
       }
+      if (posterUrl.trim() && !/^https:\/\//i.test(posterUrl.trim())) {
+        throw new Error("Poster URL must start with https://");
+      }
 
       const res = await fetch("/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, type, venueId, date, time, categoryPricing }),
+        body: JSON.stringify({
+          title,
+          description,
+          posterUrl: posterUrl.trim(),
+          type,
+          venueId,
+          date,
+          time,
+          categoryPricing,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to create event");
@@ -75,6 +89,45 @@ export default function CreateEventForm() {
           <span className="field-label">Description</span>
           <textarea className="input" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
         </label>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="flex flex-col gap-1.5">
+            <span className="field-label">Poster image URL (optional)</span>
+            <input
+              type="url"
+              className="input"
+              placeholder="https://image.tmdb.org/..."
+              value={posterUrl}
+              onChange={(e) => setPosterUrl(e.target.value)}
+            />
+          </label>
+          <p className="text-xs muted">
+            Paste a direct https image link. Leave blank for an auto-generated gradient poster.
+            Some sites (e.g. Wikipedia) block hotlinking — check the preview below actually loads.
+          </p>
+          {posterUrl.trim() && (
+            <div className="mt-1 flex items-center gap-3">
+              <div
+                className="h-40 w-28 shrink-0 overflow-hidden rounded-lg border"
+                style={{ borderColor: "var(--border)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={posterUrl}
+                  alt="Poster preview"
+                  onLoad={() => setPosterOk(true)}
+                  onError={() => setPosterOk(false)}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              {posterOk === false && (
+                <p className="text-xs text-red-600">
+                  This image didn&apos;t load — it&apos;ll show the gradient poster instead. Try another URL.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">

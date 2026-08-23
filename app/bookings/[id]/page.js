@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { Booking } from "@/lib/models";
 import { generateQrDataUrl } from "@/lib/qrcode";
-import { posterGradient } from "@/lib/posterGradient";
+import EventPoster from "@/components/EventPoster";
 import CancelBookingButton from "@/components/CancelBookingButton";
 
 export const dynamic = "force-dynamic";
@@ -27,20 +27,34 @@ export default async function BookingDetailPage({ params }) {
   return (
     <div className="mx-auto max-w-md py-4">
       <div className="overflow-hidden rounded-3xl shadow-lg" style={{ boxShadow: "var(--shadow-lg)" }}>
-        <div
-          className="relative p-6 text-white"
-          style={{ background: posterGradient(booking.eventId?.title ?? "event") }}
-        >
+        <div className="relative h-44 text-white">
+          {booking.eventId && (
+            <EventPoster
+              title={booking.eventId.title}
+              posterUrl={booking.eventId.posterUrl}
+              type={booking.eventId.type}
+              eager
+            />
+          )}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(8,8,14,0.95) 0%, rgba(8,8,14,0.6) 45%, rgba(8,8,14,0.2) 100%)",
+            }}
+          />
           {isCancelled && (
-            <span className="absolute right-5 top-5 rounded-full bg-black/30 px-3 py-1 text-[11px] font-bold uppercase tracking-wide backdrop-blur-sm">
+            <span className="absolute right-5 top-5 rounded-full bg-black/40 px-3 py-1 text-[11px] font-bold uppercase tracking-wide backdrop-blur-sm">
               Cancelled
             </span>
           )}
-          <p className="text-xs font-semibold uppercase tracking-widest text-white/70">E-Ticket</p>
-          <h1 className="mt-1 text-2xl font-bold">{booking.eventId?.title}</h1>
-          <p className="mt-1 text-sm text-white/80">
-            {booking.eventId?.date} · {booking.eventId?.time}
-          </p>
+          <div className="absolute inset-x-0 bottom-0 p-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-white/70">E-Ticket</p>
+            <h1 className="mt-1 text-2xl font-bold drop-shadow">{booking.eventId?.title}</h1>
+            <p className="mt-1 text-sm text-white/80">
+              {booking.eventId?.date} · {booking.eventId?.time}
+            </p>
+          </div>
         </div>
 
         <div className="relative p-6" style={{ background: "var(--surface)" }}>

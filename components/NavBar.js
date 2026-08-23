@@ -14,7 +14,6 @@ export default function NavBar() {
     // this layout persists across client-side navigations in the App Router,
     // so without this, logging in/out elsewhere wouldn't update the navbar
     // until a full page reload.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => setUser(d.user))

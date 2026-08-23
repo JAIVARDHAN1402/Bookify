@@ -31,6 +31,7 @@ export async function POST(request) {
 
     const title = String(body.title ?? "").trim();
     const description = String(body.description ?? "").trim();
+    const posterUrl = String(body.posterUrl ?? "").trim();
     const type = body.type;
     const venueId = body.venueId;
     const date = String(body.date ?? "").trim();
@@ -44,6 +45,11 @@ export async function POST(request) {
       throw new ApiError(400, "type must be 'movie' or 'concert'");
     }
     if (categoryPricing.length === 0) throw new ApiError(400, "categoryPricing is required");
+    // Only allow https image URLs — an http/javascript:/data: URL here would end up
+    // in an <img src> rendered for every visitor.
+    if (posterUrl && !/^https:\/\//i.test(posterUrl)) {
+      throw new ApiError(400, "posterUrl must start with https://");
+    }
 
     const venue = await Venue.findById(venueId);
     if (!venue) throw new ApiError(404, "Venue not found");
@@ -57,6 +63,7 @@ export async function POST(request) {
     const event = await Event.create({
       title,
       description,
+      posterUrl,
       type,
       organiserId: session.sub,
       venueId,

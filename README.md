@@ -147,7 +147,7 @@ authoritative Mongoose schemas; summary:
 |---|---|---|
 | `User` | name, email (unique), passwordHash, role | role: customer / organiser / admin |
 | `Venue` | name, address, categories[], layout: { rows, cols, seats[] } | layout.seats is a *template*: `{ row, col, label, category }` per seat |
-| `Event` | title, type, organiserId, venueId, date, time, categoryPricing[], status | one Event = one showtime at one venue |
+| `Event` | title, description, posterUrl, type, organiserId, venueId, date, time, categoryPricing[], status | one Event = one showtime at one venue. `posterUrl` is an optional https image; blank falls back to a generated gradient poster |
 | `Seat` | eventId, row, col, label, category, status, heldBy, holdExpiresAt, bookingId, waitlistEntryId | **one document per physical seat per event** — instantiated from the venue's layout template when the event is created. `status`: available / held / offered / booked |
 | `Booking` | eventId, customerId, seatIds[], totalAmount, bookingRef (unique), status, source | source: direct / waitlist |
 | `WaitlistEntry` | eventId, category, customerId, status, offerToken, offerSeatId, offerExpiresAt | FIFO queue per (eventId, category), ordered by `createdAt`. status: waiting / offered / expired / booked / cancelled |
@@ -183,7 +183,7 @@ set by `/api/auth/login` and `/api/auth/register`. Errors are
 | Method | Path | Auth | Body | Description |
 |---|---|---|---|---|
 | GET | `/api/events?type=&date=&q=` | — | | Browse/filter scheduled events |
-| POST | `/api/events` | organiser | `{ title, description?, type, venueId, date, time, categoryPricing[] }` | Also instantiates one `Seat` per venue-layout seat |
+| POST | `/api/events` | organiser | `{ title, description?, posterUrl?, type, venueId, date, time, categoryPricing[] }` | Also instantiates one `Seat` per venue-layout seat. `posterUrl` must be `https://` if given |
 | GET | `/api/events/:id` | — | | |
 | GET | `/api/events/:id/seats` | — | | Real-time seat map (runs the lazy expiry sweep first) |
 | POST | `/api/events/:id/hold` | customer | `{ seatIds[] }` (max 8) | Atomically holds seats, all-or-nothing |
